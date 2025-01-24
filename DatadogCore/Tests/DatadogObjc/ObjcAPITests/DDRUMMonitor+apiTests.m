@@ -78,6 +78,9 @@
     [monitor addAttributeForKey:@"" value:@""];
     [monitor addFeatureFlagEvaluationWithName: @"name" value: @"value"];
 
+    [monitor _internal_sync_addError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
+                              source:DDRUMErrorSourceCustom attributes:@{}];
+
     [monitor setDebug:YES];
     [monitor setDebug:NO];
 }

@@ -30,7 +30,6 @@ extension Writer {
     ///
     /// - Parameters:
     ///   - value: Encodable value to write.
-    ///   -  metadata: Encodable metadata to write.
     ///   - completion: The block to execute after the write task is completed.
     public func write<T: Encodable>(value: T, completion: @escaping CompletionHandler) {
         let metadata: Data? = nil

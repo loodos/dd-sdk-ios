@@ -26,18 +26,6 @@ extension Optional {
     }
 }
 
-extension Date {
-    public func secondsAgo(_ seconds: TimeInterval) -> Date {
-        return addingTimeInterval(-seconds)
-    }
-}
-
-extension TimeInterval {
-    public init(fromNanoseconds nanoseconds: Int64) {
-        self = TimeInterval(nanoseconds) / 1_000_000_000
-    }
-}
-
 extension String {
     public var utf8Data: Data { data(using: .utf8)! }
 

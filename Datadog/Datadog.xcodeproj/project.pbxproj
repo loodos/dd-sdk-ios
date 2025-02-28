@@ -516,6 +516,8 @@
 		618031F92D6DC430007027E3 /* Threading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618031F72D6DC430007027E3 /* Threading.swift */; };
 		618032042D6F1214007027E3 /* Assert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618032032D6F1214007027E3 /* Assert.swift */; };
 		618032052D6F1214007027E3 /* Assert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618032032D6F1214007027E3 /* Assert.swift */; };
+		618032072D71E75E007027E3 /* DateAndTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618032062D71E75E007027E3 /* DateAndTime.swift */; };
+		618032082D71E75E007027E3 /* DateAndTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618032062D71E75E007027E3 /* DateAndTime.swift */; };
 		618236892710560900125326 /* DebugWebviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618236882710560900125326 /* DebugWebviewViewController.swift */; };
 		618353BC2A69470A0085F84A /* CoreMetricsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618353BB2A69470A0085F84A /* CoreMetricsIntegrationTests.swift */; };
 		618353BD2A69470A0085F84A /* CoreMetricsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618353BB2A69470A0085F84A /* CoreMetricsIntegrationTests.swift */; };
@@ -2536,6 +2538,7 @@
 		617CD0DC24CEDDD300B0B557 /* RUMUserActionScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserActionScopeTests.swift; sourceTree = "<group>"; };
 		618031F72D6DC430007027E3 /* Threading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Threading.swift; sourceTree = "<group>"; };
 		618032032D6F1214007027E3 /* Assert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Assert.swift; sourceTree = "<group>"; };
+		618032062D71E75E007027E3 /* DateAndTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateAndTime.swift; sourceTree = "<group>"; };
 		618236882710560900125326 /* DebugWebviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugWebviewViewController.swift; sourceTree = "<group>"; };
 		618353BB2A69470A0085F84A /* CoreMetricsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMetricsIntegrationTests.swift; sourceTree = "<group>"; };
 		6184751426EFCF1300C7C9C5 /* DatadogTestsObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTestsObserver.swift; sourceTree = "<group>"; };
@@ -6061,6 +6064,7 @@
 				61C713D22A3DFB4900FA735A /* FuzzyHelpers.swift */,
 				6167E72B2B84C72B00C3CA2D /* UIKitHelpers.swift */,
 				6174D61C2C007B3300EC7469 /* ModuleName.swift */,
+				618032062D71E75E007027E3 /* DateAndTime.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -8791,6 +8795,7 @@
 				6167E7142B837F0B00C3CA2D /* BacktraceReportingMocks.swift in Sources */,
 				D2579558298ABB04008A1BE5 /* Encoding.swift in Sources */,
 				6167E7202B837FB200C3CA2D /* DDThreadMocks.swift in Sources */,
+				618032072D71E75E007027E3 /* DateAndTime.swift in Sources */,
 				D2EBEE4829BA17C400B15732 /* NetworkInstrumentationMocks.swift in Sources */,
 				3C0D5DEF2A5442A900446CF9 /* EventMocks.swift in Sources */,
 				D24C9C5529A7C5F3002057CF /* DateProvider.swift in Sources */,
@@ -8840,6 +8845,7 @@
 				6167E7152B837F0B00C3CA2D /* BacktraceReportingMocks.swift in Sources */,
 				D257957B298ABB83008A1BE5 /* Encoding.swift in Sources */,
 				6167E7212B837FB200C3CA2D /* DDThreadMocks.swift in Sources */,
+				618032082D71E75E007027E3 /* DateAndTime.swift in Sources */,
 				D2EBEE4929BA17C400B15732 /* NetworkInstrumentationMocks.swift in Sources */,
 				3C0D5DF02A5442A900446CF9 /* EventMocks.swift in Sources */,
 				D24C9C5629A7C5F3002057CF /* DateProvider.swift in Sources */,

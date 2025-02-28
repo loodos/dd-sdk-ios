@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import TestUtilities
 #if !DD_COMPILED_FOR_INTEGRATION_TESTS
 /// This file is compiled both for Unit and Integration tests.
 /// * The Unit Tests target can see `Datadog` by `@testable import DatadogCore`.
@@ -488,18 +489,6 @@ extension RUMSessionMatcher.View {
     }
 }
 
-private extension Date {
-    init(millisecondsSince1970: Int64) {
-        self.init(timeIntervalSince1970: TimeInterval(millisecondsSince1970) / 1_000)
-    }
-}
-
-private extension TimeInterval {
-    init(fromNanoseconds nanoseconds: Int64) {
-        self = TimeInterval(nanoseconds) / 1_000_000_000
-    }
-}
-
 extension RUMSessionMatcher {
     /// Asserts that all events in this session have certain `sessionPrecondition` set.
     /// Throws if there are no views in this session.
@@ -507,26 +496,18 @@ extension RUMSessionMatcher {
         guard !views.isEmpty else {
             throw RUMSessionConsistencyException(description: "There are no views in this session")
         }
+        return sessionPrecondition == self.sessionPrecondition
+    }
 
-        for view in views {
-            guard view.viewEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-            guard view.actionEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-            guard view.resourceEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-            guard view.errorEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-            guard view.longTaskEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
-                return false
-            }
-        }
-
-        return true
+    var sessionPrecondition: RUMSessionPrecondition? {
+        var fromViews = viewEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        var fromActions = actionEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        var fromResources = resourceEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        var fromErrors = errorEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        var fromLongTasks = longTaskEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let all = Set(fromViews + fromActions + fromResources + fromErrors + fromLongTasks)
+        precondition(all.count == 1, "All events must share the same session precondition")
+        return all.first
     }
 }
 
@@ -535,19 +516,36 @@ extension RUMSessionMatcher {
 extension RUMSessionMatcher.View {
     /// The start of this view (as timestamp; milliseconds) defined as the start timestamp of the earliest view event in this view.
     var startTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
+
+    /// The duration of this view, in nanoseconds.
+    var durationNs: Int64? { viewEvents.last?.view.timeSpent }
+
+    /// The duration of this view, in seconds.
+    var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
 }
 
 extension RUMSessionMatcher: CustomStringConvertible {
     var description: String { renderSession() }
 
     /// The start of this session (as timestamp; milliseconds) defined as the start timestamp of the earliest view in this session.
-    private var sessionStartTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
+    private var sessionStartTimestampMs: Int64? { viewEvents.map({ $0.date }).min() }
 
     /// The start of this session (as timestamp; nanoseconds) defined as the start timestamp of the earliest view in this session.
-    private var sessionStartTimestampNs: Int64 { sessionStartTimestampMs * 1_000_000 }
+    private var sessionStartTimestampNs: Int64? { sessionStartTimestampMs.map { $0 * 1_000_000 } }
 
     /// The end of this session (as timestamp; nanoseconds) defined as the end timestamp of the latest view in this session.
-    private var sessionEndTimestampNs: Int64 { viewEvents.map({ $0.date * 1_000_000 + $0.view.timeSpent }).max() ?? 0 }
+    private var sessionEndTimestampNs: Int64? { viewEvents.map({ $0.date * 1_000_000 + $0.view.timeSpent }).max() }
+
+    /// The duration of this session, in nanoseconds.
+    var durationNs: Int64? {
+        guard let startNs = sessionStartTimestampNs, let endNs = sessionEndTimestampNs else {
+            return nil
+        }
+        return endNs - startNs
+    }
+
+    /// The duration of this session, in seconds.
+    var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
 
     private func renderSession() -> String {
         var output = renderBox(string: "🎞 RUM session")
@@ -555,9 +553,10 @@ extension RUMSessionMatcher: CustomStringConvertible {
             attributes: [
                 ("application.id", applicationID),
                 ("id", sessionID),
+                ("precondition", sessionPrecondition?.rawValue ?? "nil"),
                 ("views.count", "\(views.count)"),
                 ("start", prettyDate(timestampMs: sessionStartTimestampMs)),
-                ("duration", pretty(nanoseconds: sessionEndTimestampNs - sessionStartTimestampNs)),
+                ("duration", pretty(nanoseconds: durationNs)),
             ]
         )
         views.forEach { view in
@@ -578,7 +577,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
                 ("name", view.name ?? "nil"),
                 ("id", view.viewID),
                 ("date", prettyDate(timestampMs: lastViewEvent.date)),
-                ("date (relative in session)", pretty(milliseconds: lastViewEvent.date - sessionStartTimestampMs)),
+                ("date (relative in session)", pretty(milliseconds: sessionStartTimestampMs.map { lastViewEvent.date - $0 })),
                 ("duration", pretty(nanoseconds: lastViewEvent.view.timeSpent)),
                 ("event counts", "view (\(view.viewEvents.count)), action (\(view.actionEvents.count)), resource (\(view.resourceEvents.count)), error (\(view.errorEvents.count)), long task (\(view.longTaskEvents.count))"),
             ]
@@ -716,11 +715,17 @@ extension RUMSessionMatcher: CustomStringConvertible {
         return horizontalBorder + "\n"
     }
 
-    private func pretty(milliseconds: Int64) -> String {
-        pretty(nanoseconds: milliseconds * 1_000_000)
+    private func pretty(milliseconds: Int64?) -> String {
+        guard let milliseconds else {
+            return "nil"
+        }
+        return pretty(nanoseconds: milliseconds * 1_000_000)
     }
 
-    private func pretty(nanoseconds: Int64) -> String {
+    private func pretty(nanoseconds: Int64?) -> String {
+        guard let nanoseconds else {
+            return "nil"
+        }
         if nanoseconds >= 1_000_000_000 {
             let seconds = round((Double(nanoseconds) / 1_000_000_000) * 100) / 100
             return "\(seconds)s"
@@ -739,7 +744,11 @@ extension RUMSessionMatcher: CustomStringConvertible {
         return formatter
     }()
 
-    private func prettyDate(timestampMs: Int64) -> String {
+    private func prettyDate(timestampMs: Int64?) -> String {
+        guard let timestampMs else {
+            return "nil"
+        }
+
         let timestampSec = TimeInterval(timestampMs) / 1_000
         let date = Date(timeIntervalSince1970: timestampSec)
         return RUMSessionMatcher.dateFormatter.string(from: date)

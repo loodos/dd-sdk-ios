@@ -59,8 +59,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if command is RUMSDKInitCommand {
             createInitialSession(with: context, on: command)
 
-            // If the app was started by a user (foreground & not prewarmed):
-            if context.applicationStateHistory.currentState == .active && !context.launchTime.isActivePrewarm {
+            // RUM-6698: When user launches the app that was not running (cold start), the expected
+            // initial app state is `.inactive`:
+            //
+            // Ref.: https://developer.apple.com/documentation/uikit/app_and_environment/managing_your_app_s_life_cycle
+            // > After launch, the system puts the app in the inactive or background state, depending on whether the UI
+            // > is about to appear onscreen. When launching to the foreground, the system transitions the app to the
+            // > active state automatically.
+            //
+            // Although for apps that initialize RUM after `application(_:didFinishLaunchingWithOptions:)` the initial state
+            // can be `.active`, hence we consider both for starting the initial view.
+            let appState = context.applicationStateHistory.currentState
+
+            if appState == .inactive || appState == .active {
+                // TODO: RUM-8372 what if the process was prewarmed, but SDK was initialized much later: after becamseActive()?
                 // Start "ApplicationLaunch" view immediatelly:
                 startApplicationLaunchView(on: command, context: context, writer: writer)
             }
@@ -148,10 +160,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        if context.launchTime.isActivePrewarm {
-            startPrecondition = .prewarm
-        } else if context.applicationStateHistory.currentState == .background {
-            startPrecondition = .backgroundLaunch
+        if context.applicationStateHistory.currentState == .background {
+            startPrecondition = context.launchTime.isActivePrewarm ? .prewarm : .backgroundLaunch
         } else {
             startPrecondition = .userAppLaunch
         }
@@ -235,11 +245,14 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Forces the `ApplicationLaunchView` to be started.
     /// Added as part of https://github.com/DataDog/dd-sdk-ios/pull/1290 to separate creation of first view
     /// from creation of initial session due to receiving `RUMSDKInitCommand`. Starting from RUM-1649 the "application launch" view
-    /// is started on SDK init only when the app is launched by user with no prewarming.
+    /// is started on SDK init only when the app is launched by user with no prewarming or when app was prewarmed but SDK was initialized
+    /// after it became active.
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         applicationActive = true
 
-        guard context.applicationStateHistory.currentState != .background else {
+        let userLaunchWithNoPrewarming = context.applicationStateHistory.initialState != .background && !context.launchTime.isActivePrewarm
+        let prewarmedButLaunchedInForeground = context.launchTime.isActivePrewarm && command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
+        guard userLaunchWithNoPrewarming || prewarmedButLaunchedInForeground else {
             return
         }
 

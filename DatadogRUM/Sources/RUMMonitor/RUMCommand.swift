@@ -55,6 +55,24 @@ internal struct RUMStopSessionCommand: RUMCommand {
     }
 }
 
+internal struct RUMHandleAppLifecycleEventCommand: RUMCommand {
+    var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var attributes: [AttributeKey: AttributeValue] = [:]
+    var canStartBackgroundView = false
+    var isUserInteraction = false
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
+
+    enum LifecycleEvent {
+        case didBecomeActive
+        case willResignActive
+        case didEnterBackground
+        case willEnterForeground
+    }
+
+    let event: LifecycleEvent
+}
+
 // MARK: - RUM View related commands
 
 internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttributes {

@@ -500,11 +500,11 @@ extension RUMSessionMatcher {
     }
 
     var sessionPrecondition: RUMSessionPrecondition? {
-        var fromViews = viewEvents.compactMap { $0.dd.session?.sessionPrecondition }
-        var fromActions = actionEvents.compactMap { $0.dd.session?.sessionPrecondition }
-        var fromResources = resourceEvents.compactMap { $0.dd.session?.sessionPrecondition }
-        var fromErrors = errorEvents.compactMap { $0.dd.session?.sessionPrecondition }
-        var fromLongTasks = longTaskEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromViews = viewEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromActions = actionEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromResources = resourceEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromErrors = errorEvents.compactMap { $0.dd.session?.sessionPrecondition }
+        let fromLongTasks = longTaskEvents.compactMap { $0.dd.session?.sessionPrecondition }
         let all = Set(fromViews + fromActions + fromResources + fromErrors + fromLongTasks)
         precondition(all.count == 1, "All events must share the same session precondition")
         return all.first
@@ -536,6 +536,8 @@ extension RUMSessionMatcher: CustomStringConvertible {
     /// The end of this session (as timestamp; nanoseconds) defined as the end timestamp of the latest view in this session.
     private var sessionEndTimestampNs: Int64? { viewEvents.map({ $0.date * 1_000_000 + $0.view.timeSpent }).max() }
 
+    var sessionStartDate: Date? { sessionStartTimestampMs.map { Date(millisecondsSince1970: $0) } }
+
     /// The duration of this session, in nanoseconds.
     var durationNs: Int64? {
         guard let startNs = sessionStartTimestampNs, let endNs = sessionEndTimestampNs else {
@@ -546,6 +548,18 @@ extension RUMSessionMatcher: CustomStringConvertible {
 
     /// The duration of this session, in seconds.
     var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
+
+    /// The application start action.
+    var applicationStartAction: RUMActionEvent? {
+        let appStartActions = actionEvents.filter { $0.action.type == .applicationStart }
+        precondition(appStartActions.count <= 1, "Session cannot have more than one `.applicationStart` action")
+        return appStartActions.first
+    }
+
+    /// The application startup time (nanoseconds).
+    var applicationStartupTime: TimeInterval? {
+        return applicationStartAction?.action.loadingTime.map { TimeInterval(fromNanoseconds: $0) }
+    }
 
     private func renderSession() -> String {
         var output = renderBox(string: "🎞 RUM session")

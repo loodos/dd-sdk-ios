@@ -214,7 +214,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
             } else if !hasActiveView {
-                handleOffViewCommand(command: command, context: context)
+                handleOffViewCommand(command: command, context: context, writer: writer)
             }
         }
 
@@ -301,9 +301,25 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func startApplicationLaunchView(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
+    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         let isActivePrewarm = context.launchTime.isActivePrewarm
-        let startTime = isActivePrewarm ? sessionStartTime : context.launchTime.launchDate
+        let startTime: Date
+
+        if command is RUMApplicationStartCommand {
+            if context.applicationStateHistory.initialState == .active {
+                // This is the case when SDK was initialized after application became active, so not during
+                // `application(_:didFinishLaunchingWithOptions:)` but later. For example, when initialization
+                // is done lazily from first presented view but also when SDK was stopped and initialized again
+                // later during runtime.
+                startTime = sessionStartTime
+            } else {
+                startTime = isActivePrewarm ? sessionStartTime : context.launchTime.launchDate
+            }
+        } else {
+            // This is the case of lazy starting ApplicationLaunch view for tracking events that will be
+            // otherwise lost due to absence of a view.
+            startTime = command.time
+        }
 
         startView(
             isInitialView: true,
@@ -318,7 +334,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func handleOffViewCommand(command: RUMCommand, context: DatadogContext) {
+    private func handleOffViewCommand(command: RUMCommand, context: DatadogContext, writer: Writer) {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: state,
             isAppInForeground: context.applicationStateHistory.currentState.isRunningInForeground,
@@ -328,6 +344,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         switch handlingRule {
         case .handleInBackgroundView where command.canStartBackgroundView:
             startBackgroundView(on: command, context: context)
+        case .handleInApplicationLaunchView:
+            startApplicationLaunchView(on: command, context: context, writer: writer)
         default:
             if let missedEventType = command.missedEventType {
                 // In case there was an event missed due to no active view, track it in Session Ended metric
@@ -351,7 +369,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // It is expected to receive 'keep alive' while no active view (when tracking WebView events), and performance metric
         // updates are sent automatically by cross platform frameworks whether a view is active or not, resulting in log
         // spam.
-        return command is RUMKeepSessionAliveCommand || command is RUMUpdatePerformanceMetric
+        return command is RUMKeepSessionAliveCommand || command is RUMUpdatePerformanceMetric || command is RUMHandleAppLifecycleEventCommand
     }
 
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {

@@ -93,7 +93,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startApplicationLaunchView(on: command, context: context, writer: writer)
         }
 
-        if activeSession == nil && command.isUserInteraction {
+        if activeSession == nil {
             // No active sessions, start a new one
             startNewSession(on: command, context: context, writer: writer)
         }
@@ -129,6 +129,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
             switch endReason {
             case .timeOut, .maxDuration:
+                // RUM-RUM-8372 Do not refresh session if event arrives in background. If `trackBackgroundEvents` is enabled
+                // the session will be started lazily with Background view.
+                guard context.applicationStateHistory.currentState == .active else {
+                    return nil
+                }
+
                 // Replace this session scope with the scope for refreshed session:
                 return refresh(expiredSession: scope, on: command, context: context, writer: writer)
             case .stopAPI:
@@ -204,12 +210,15 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         return refreshedSession
     }
 
-    /// Starts new RUM Session some time after previous one was ended with ``RUMMonitorProtocol.stopSession()`` API. It may re-activate the last view from previous session.
     private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         if lastSessionEndReason == .stopAPI {
             startPrecondition = .explicitStop
+        } else if lastSessionEndReason == .timeOut {
+            startPrecondition = .inactivityTimeout
+        } else if lastSessionEndReason == .maxDuration {
+            startPrecondition = .maxDuration
         } else {
             dependencies.telemetry.error("Failed to determine session precondition for NEW session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }

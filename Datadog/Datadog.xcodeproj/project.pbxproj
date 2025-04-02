@@ -659,6 +659,8 @@
 		61E25C732D8DEFC900A161A4 /* XCTExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25C712D8DEFC900A161A4 /* XCTExtensions.swift */; };
 		61E25C752D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25C742D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift */; };
 		61E25C762D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25C742D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift */; };
+		61E25C7A2D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25C792D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift */; };
+		61E25C7B2D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25C792D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift */; };
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */; };
@@ -2676,6 +2678,7 @@
 		61E25C6E2D8DEEFB00A161A4 /* AppRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRunner.swift; sourceTree = "<group>"; };
 		61E25C712D8DEFC900A161A4 /* XCTExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTExtensions.swift; sourceTree = "<group>"; };
 		61E25C742D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionStartInBackgroundTests.swift; sourceTree = "<group>"; };
+		61E25C792D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionTimeOutInBackgroundTests.swift; sourceTree = "<group>"; };
 		61E45BCE2450A6EC00F2C652 /* TraceIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceIDTests.swift; sourceTree = "<group>"; };
 		61E45BD12450F65B00F2C652 /* SpanEventBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanEventBuilderTests.swift; sourceTree = "<group>"; };
 		61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
@@ -5417,6 +5420,7 @@
 				1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */,
 				61E8C5072B28898800E709B4 /* RUMSessionStartInForegroundTests.swift */,
 				61E25C742D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift */,
+				61E25C792D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift */,
 				3CA00B062C2AE52400E6FE01 /* WatchdogTerminationsMonitoringTests.swift */,
 				D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */,
 				6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */,
@@ -8021,6 +8025,7 @@
 				6179DB562B6022EA00E9E04E /* SendingCrashReportTests.swift in Sources */,
 				3C0D5DE22A543DC400446CF9 /* EventGeneratorTests.swift in Sources */,
 				6136CB4A2A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift in Sources */,
+				61E25C7B2D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift in Sources */,
 				D26C49AF2886DC7B00802B2D /* ApplicationStatePublisherTests.swift in Sources */,
 				6147989C2A459E2B0095CB02 /* DDTrace+apiTests.m in Sources */,
 				D22743EB29DEC9E6001A7EF9 /* Casting+RUM.swift in Sources */,
@@ -9330,6 +9335,7 @@
 				D25CFAA229C8644E00E3A43D /* Casting+Tracing.swift in Sources */,
 				D2CB6EF227C520D400A62B57 /* KronosTimeStorageTests.swift in Sources */,
 				D2CB6EF427C520D400A62B57 /* FileWriterTests.swift in Sources */,
+				61E25C7A2D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift in Sources */,
 				D2CB6EFE27C520D400A62B57 /* RUMMonitorConfigurationTests.swift in Sources */,
 				D2CB6F0027C520D400A62B57 /* RUMSessionMatcher.swift in Sources */,
 				A728ADB12934EB0C00397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */,

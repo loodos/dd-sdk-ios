@@ -164,6 +164,10 @@ internal struct AppRun {
         return new
     }
 
+    func and(_ condition: @escaping (AppRunner) -> Void) -> Self {
+        return when(condition)
+    }
+
     func then() throws -> [RUMSessionMatcher] {
         let app = AppRunner()
         app.setUp()

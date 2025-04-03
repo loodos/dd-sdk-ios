@@ -138,17 +138,29 @@ internal class AppRunner {
         return try RUMSessionMatcher.groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
     }
 
+    private var lastAppearedViewController: UIViewController?
+
     func viewDidAppear(vc: UIViewController) {
+        if let lastAppearedViewController {
+            viewDidDisappear(vc: lastAppearedViewController)
+        }
         vc.viewDidAppear(true)
+        lastAppearedViewController = vc
     }
 
     func viewDidDisappear(vc: UIViewController) {
         vc.viewDidDisappear(true)
+        if lastAppearedViewController === vc {
+            lastAppearedViewController = nil
+        }
     }
 }
 
-internal struct AppRun {
-    private var testBlocks: [(AppRunner) -> Void]
+internal struct AppRun: Equatable {
+    private var testBlocks: [(AppRunner) -> Void] {
+        didSet { uuid = UUID() }
+    }
+    private var uuid = UUID()
 
     private init(precondition: @escaping (AppRunner) -> Void) {
         testBlocks = [precondition]
@@ -175,4 +187,6 @@ internal struct AppRun {
         testBlocks.forEach { block in block(app) }
         return try app.recordedRUMSessions()
     }
+
+    static func == (lhs: AppRun, rhs: AppRun) -> Bool { lhs.uuid == rhs.uuid }
 }

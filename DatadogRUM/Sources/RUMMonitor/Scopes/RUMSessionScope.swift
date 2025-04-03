@@ -138,7 +138,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         from expiredSession: RUMSessionScope,
         startTime: Date,
         startPrecondition: RUMSessionPrecondition?,
-        context: DatadogContext
+        context: DatadogContext,
+        transferActiveView: Bool
     ) {
         self.init(
             isInitialSession: false,
@@ -149,20 +150,26 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             dependencies: expiredSession.dependencies
         )
 
-        // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
-        self.viewScopes = expiredSession.viewScopes.map { expiredView in
-            return RUMViewScope(
-                isInitialView: false,
-                parent: self,
-                dependencies: dependencies,
-                identity: expiredView.identity,
-                path: expiredView.viewPath,
-                name: expiredView.viewName,
-                customTimings: expiredView.customTimings,
-                startTime: startTime,
-                serverTimeOffset: context.serverTimeOffset,
-                interactionToNextViewMetric: interactionToNextViewMetric
-            )
+        // Transfer active View to new `RUMViewScope`:
+        if transferActiveView {
+            if let lastActiveView = expiredSession.viewScopes.last(where: { $0.isActiveView }) {
+                self.viewScopes = [
+                    RUMViewScope(
+                        isInitialView: false,
+                        parent: self,
+                        dependencies: dependencies,
+                        identity: lastActiveView.identity,
+                        path: lastActiveView.viewPath,
+                        name: lastActiveView.viewName,
+                        customTimings: lastActiveView.customTimings,
+                        startTime: startTime,
+                        serverTimeOffset: context.serverTimeOffset,
+                        interactionToNextViewMetric: interactionToNextViewMetric
+                    )
+                ]
+            } else {
+                self.viewScopes = []
+            }
         }
     }
 

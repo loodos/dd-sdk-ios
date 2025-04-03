@@ -661,6 +661,8 @@
 		61E25C762D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25C742D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift */; };
 		61E25C7A2D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25C792D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift */; };
 		61E25C7B2D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25C792D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift */; };
+		61E25CC52D9D44E500A161A4 /* RUMSessionTimeOutInForegroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25CC42D9D44E500A161A4 /* RUMSessionTimeOutInForegroundTests.swift */; };
+		61E25CC62D9D44E500A161A4 /* RUMSessionTimeOutInForegroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E25CC42D9D44E500A161A4 /* RUMSessionTimeOutInForegroundTests.swift */; };
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */; };
@@ -2679,6 +2681,7 @@
 		61E25C712D8DEFC900A161A4 /* XCTExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTExtensions.swift; sourceTree = "<group>"; };
 		61E25C742D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionStartInBackgroundTests.swift; sourceTree = "<group>"; };
 		61E25C792D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionTimeOutInBackgroundTests.swift; sourceTree = "<group>"; };
+		61E25CC42D9D44E500A161A4 /* RUMSessionTimeOutInForegroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionTimeOutInForegroundTests.swift; sourceTree = "<group>"; };
 		61E45BCE2450A6EC00F2C652 /* TraceIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceIDTests.swift; sourceTree = "<group>"; };
 		61E45BD12450F65B00F2C652 /* SpanEventBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanEventBuilderTests.swift; sourceTree = "<group>"; };
 		61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
@@ -5421,6 +5424,7 @@
 				61E8C5072B28898800E709B4 /* RUMSessionStartInForegroundTests.swift */,
 				61E25C742D8E04E700A161A4 /* RUMSessionStartInBackgroundTests.swift */,
 				61E25C792D90367100A161A4 /* RUMSessionTimeOutInBackgroundTests.swift */,
+				61E25CC42D9D44E500A161A4 /* RUMSessionTimeOutInForegroundTests.swift */,
 				3CA00B062C2AE52400E6FE01 /* WatchdogTerminationsMonitoringTests.swift */,
 				D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */,
 				6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */,
@@ -8009,6 +8013,7 @@
 				618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */,
 				61133C5A2423990D00786299 /* FileTests.swift in Sources */,
 				61133C6B2423990D00786299 /* LogMatcher.swift in Sources */,
+				61E25CC62D9D44E500A161A4 /* RUMSessionTimeOutInForegroundTests.swift in Sources */,
 				61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */,
 				D2EFA875286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */,
 				61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */,
@@ -9407,6 +9412,7 @@
 				A7DA18052AB0C91300F76337 /* DDUIKitRUMViewsPredicateTests.swift in Sources */,
 				A79B0F65292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */,
 				1117AA062D09A39400F86B29 /* RUMAttributesIntegrationTests.swift in Sources */,
+				61E25CC52D9D44E500A161A4 /* RUMSessionTimeOutInForegroundTests.swift in Sources */,
 				D2CB6F4327C520D400A62B57 /* DDLogsTests.swift in Sources */,
 				D2CB6F4527C520D400A62B57 /* TracerTests.swift in Sources */,
 				D2CB6F4627C520D400A62B57 /* CoreMocks.swift in Sources */,

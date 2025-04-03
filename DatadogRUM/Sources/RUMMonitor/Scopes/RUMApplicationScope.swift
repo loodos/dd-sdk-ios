@@ -198,11 +198,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
 
+        let isViewRelatedCommand = (command is RUMStartViewCommand) || (command is RUMStopViewCommand)
         let refreshedSession = RUMSessionScope(
             from: expiredSession,
             startTime: command.time,
             startPrecondition: startPrecondition,
-            context: context
+            context: context,
+            transferActiveView: !isViewRelatedCommand
         )
         sessionScopeDidUpdate(refreshedSession)
         lastSessionEndReason = nil

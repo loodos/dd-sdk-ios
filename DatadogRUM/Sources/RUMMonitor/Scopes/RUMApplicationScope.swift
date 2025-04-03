@@ -230,7 +230,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Starting NEW session on due to \(type(of: command)), but initial sesison never existed")
         }
 
-        let resumingViewScope = command is RUMStartViewCommand ? nil : lastActiveView
+        let isViewRelatedCommand = (command is RUMStartViewCommand) || (command is RUMStopViewCommand)
         let newSession = RUMSessionScope(
             isInitialSession: false,
             parent: self,
@@ -238,7 +238,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startPrecondition: startPrecondition,
             context: context,
             dependencies: dependencies,
-            resumingViewScope: resumingViewScope
+            resumingViewScope: isViewRelatedCommand ? nil : lastActiveView
         )
         lastActiveView = nil
         lastSessionEndReason = nil

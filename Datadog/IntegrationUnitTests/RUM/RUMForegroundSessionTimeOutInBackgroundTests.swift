@@ -10,7 +10,7 @@ import TestUtilities
 @testable import DatadogCore
 @testable import DatadogRUM
 
-class RUMSessionTimeOutInBackgroundTests: XCTestCase {
+class RUMForegroundSessionTimeOutInBackgroundTests: XCTestCase {
     private let dt1: TimeInterval = 1.1
     private let dt2: TimeInterval = 1.2
     private let dt3: TimeInterval = 1.3

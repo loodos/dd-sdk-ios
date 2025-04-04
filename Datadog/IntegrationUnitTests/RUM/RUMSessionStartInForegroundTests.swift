@@ -59,7 +59,7 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
     }
 
-    private func noEventIsTrackedAndAppEntersBackground(app: AppRunner) {
+    private func appEntersBackground(app: AppRunner) {
         precondition(app.currentState == .active)
         app.advanceTime(by: dt3)
         app.receiveAppStateNotification(ApplicationNotifications.willResignActive)
@@ -137,15 +137,13 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenUserLaunch_whenNoEventIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
-            let session = try given.when(noEventIsTrackedAndAppEntersBackground).then().takeSingle()
+            let session = try given.when(appEntersBackground).then().takeSingle()
             XCTAssertNotNil(session.applicationStartAction)
             XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -157,10 +155,14 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
-            let session = try given.when(noEventIsTrackedAndAppEntersBackground).then().takeSingle()
+            let session = try given.when(appEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
             XCTAssertNil(session.applicationStartupTime)
             XCTAssertEqual(session.sessionStartDate, processLaunchDate + dt1 + dt2, accuracy: accuracy)
@@ -175,13 +177,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenUserLaunch_whenManualViewIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When
             for when in [
                 given.when(manualViewIsStartedAndCompletesInForeground),
@@ -203,8 +203,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When
             for when in [
                 given.when(manualViewIsStartedAndCompletesInForeground),
@@ -231,21 +235,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
         })
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        })
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-            $0.trackBackgroundEvents = true
-        })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
             $0.trackBackgroundEvents = true
         })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(automaticViewIsStartedAndAppEntersBackground).then().takeSingle()
             XCTAssertNotNil(session.applicationStartAction)
@@ -261,8 +256,15 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        })
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(automaticViewIsStartedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
@@ -281,13 +283,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenUserLaunch_whenActionIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(actionIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNotNil(session.applicationStartAction)
@@ -302,8 +302,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(actionIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
@@ -321,13 +325,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenUserLaunch_whenResourceIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When
             for when in [
                 given.when(resourceIsStartedAndCompletesInForeground),
@@ -348,8 +350,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When
             for when in [
                 given.when(resourceIsStartedAndCompletesInForeground),
@@ -373,13 +379,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenUserLaunch_whenLongTaskIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(longTaskIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNotNil(session.applicationStartAction)
@@ -394,8 +398,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: userLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(longTaskIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
@@ -417,23 +425,25 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenNoEventIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
-            let sessions = try given.when(noEventIsTrackedAndAppEntersBackground).then()
+            let sessions = try given.when(appEntersBackground).then()
             XCTAssertTrue(sessions.isEmpty)
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
-            let session = try given.when(noEventIsTrackedAndAppEntersBackground).then().takeSingle()
+            let session = try given.when(appEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
             XCTAssertNil(session.applicationStartupTime)
             XCTAssertEqual(session.sessionStartDate, processLaunchDate + dt1 + dt2, accuracy: accuracy)
@@ -448,13 +458,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenManualViewIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When
             for when in [
                 given.when(manualViewIsStartedAndCompletesInForeground),
@@ -474,8 +482,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When
             for when in [
                 given.when(manualViewIsStartedAndCompletesInForeground),
@@ -502,21 +514,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
         })
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        })
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-            $0.trackBackgroundEvents = true
-        })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
             $0.trackBackgroundEvents = true
         })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(automaticViewIsStartedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartupTime)
@@ -530,8 +533,15 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        })
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(automaticViewIsStartedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
@@ -550,13 +560,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenActionIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(actionIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartupTime)
@@ -570,8 +578,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(actionIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
@@ -588,13 +600,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenResourceIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When
             for when in [
                 given.when(resourceIsStartedAndCompletesInForeground),
@@ -615,8 +625,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When
             for when in [
                 given.when(resourceIsStartedAndCompletesInForeground),
@@ -640,13 +654,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenLongTaskIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(longTaskIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartupTime)
@@ -661,8 +673,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(longTaskIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
@@ -683,23 +699,25 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenNoEventIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
-            let sessions = try given.when(noEventIsTrackedAndAppEntersBackground).then()
+            let sessions = try given.when(appEntersBackground).then()
             XCTAssertTrue(sessions.isEmpty)
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
-            let session = try given.when(noEventIsTrackedAndAppEntersBackground).then().takeSingle()
+            let session = try given.when(appEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
             XCTAssertNil(session.applicationStartupTime)
             XCTAssertEqual(session.sessionStartDate, processLaunchDate + dt1 + dt2, accuracy: accuracy)
@@ -714,13 +732,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenManualViewIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When
             for when in [
                 given.when(manualViewIsStartedAndCompletesInForeground),
@@ -740,8 +756,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When
             for when in [
                 given.when(manualViewIsStartedAndCompletesInForeground),
@@ -767,21 +787,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
         })
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        })
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-            $0.trackBackgroundEvents = true
-        })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
             $0.trackBackgroundEvents = true
         })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(automaticViewIsStartedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartupTime)
@@ -795,8 +806,15 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        })
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(automaticViewIsStartedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
@@ -815,13 +833,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenActionIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(actionIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartupTime)
@@ -835,8 +851,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(actionIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)
@@ -853,13 +873,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenResourceIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When
             for when in [
                 given.when(resourceIsStartedAndCompletesInForeground),
@@ -880,8 +898,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When
             for when in [
                 given.when(resourceIsStartedAndCompletesInForeground),
@@ -905,13 +927,11 @@ class RUMSessionStartInForegroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenLongTaskIsTrackedBeforeAppEntersBackground() throws {
         // Given
         let given1 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
-        let given3 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
-        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabledBeforeAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
-        // - RUM enabled before app becomes active
-        for given in [given1, given3] {
+        for given in [given1, given2] {
             // When / Then
             let session = try given.when(longTaskIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartupTime)
@@ -926,8 +946,12 @@ class RUMSessionStartInForegroundTests: XCTestCase {
         }
 
         // Given
-        // - RUM enabled after app becomes active
-        for given in [given2, given4] {
+        let given3 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch)
+        let given4 = givenRUMEnabledAfterAppDidBecomeActive(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given3, given4] {
             // When / Then
             let session = try given.when(longTaskIsTrackedAndAppEntersBackground).then().takeSingle()
             XCTAssertNil(session.applicationStartAction)

@@ -70,9 +70,10 @@ class RUMSessionStartInBackgroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
         // Given
         let given1 = givenRUMEnabled(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabled(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabled(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
         for given in [given1, given2] {
             // When / Then
             let sessions = try given.when(noEventIsTracked).then()
@@ -83,14 +84,16 @@ class RUMSessionStartInBackgroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenActionsAreTracked() throws {
         // Given
         let given1 = givenRUMEnabled(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabled(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
 
-        // Given BET disabled
         // When / Then
         let sessions = try given1.when(actionsAreTracked).then()
         XCTAssertTrue(sessions.isEmpty)
 
-        // Given BET enabled
+        // Given
+        let given2 = givenRUMEnabled(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
         // When / Then
         let session = try given2.when(actionsAreTracked).then().takeSingle()
         XCTAssertNil(session.applicationStartAction)
@@ -106,14 +109,16 @@ class RUMSessionStartInBackgroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenResourceIsTracked() throws {
         // Given
         let given1 = givenRUMEnabled(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabled(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
 
-        // Given BET disabled
         // When / Then
         let sessions = try given1.when(resourceIsTracked).then()
         XCTAssertTrue(sessions.isEmpty)
 
-        // Given BET enabled
+        // Given
+        let given2 = givenRUMEnabled(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
         // When / Then
         let session = try given2.when(resourceIsTracked).then().takeSingle()
         XCTAssertNil(session.applicationStartAction)
@@ -129,9 +134,10 @@ class RUMSessionStartInBackgroundTests: XCTestCase {
     func testGivenOSPrewarmLaunch_whenLongTasksAreTracked() throws {
         // Given
         let given1 = givenRUMEnabled(launchType: osPrewarmLaunch)
-        let given2 = givenRUMEnabled(launchType: osPrewarmLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabled(launchType: osPrewarmLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
         for given in [given1, given2] {
             // When / Then
             let sessions = try given.when(longTasksAreTracked).then()
@@ -146,9 +152,10 @@ class RUMSessionStartInBackgroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenNoEventIsTracked() throws {
         // Given
         let given1 = givenRUMEnabled(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabled(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabled(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
         for given in [given1, given2] {
             // When / Then
             let sessions = try given.when(noEventIsTracked).then()
@@ -159,14 +166,16 @@ class RUMSessionStartInBackgroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenActionsAreTracked() throws {
         // Given
         let given1 = givenRUMEnabled(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabled(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
 
-        // Given BET disabled
         // When / Then
         let sessions = try given1.when(actionsAreTracked).then()
         XCTAssertTrue(sessions.isEmpty)
 
-        // Given BET enabled
+        // Given
+        let given2 = givenRUMEnabled(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
         // When / Then
         let session = try given2.when(actionsAreTracked).then().takeSingle()
         XCTAssertNil(session.applicationStartAction)
@@ -182,14 +191,16 @@ class RUMSessionStartInBackgroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenResourceIsTracked() throws {
         // Given
         let given1 = givenRUMEnabled(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabled(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
 
-        // Given BET disabled
         // When / Then
         let sessions = try given1.when(resourceIsTracked).then()
         XCTAssertTrue(sessions.isEmpty)
 
-        // Given BET enabled
+        // Given
+        let given2 = givenRUMEnabled(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
         // When / Then
         let session = try given2.when(resourceIsTracked).then().takeSingle()
         XCTAssertNil(session.applicationStartAction)
@@ -205,9 +216,10 @@ class RUMSessionStartInBackgroundTests: XCTestCase {
     func testGivenBackgroundLaunch_whenLongTasksAreTracked() throws {
         // Given
         let given1 = givenRUMEnabled(launchType: backgroundLaunch)
-        let given2 = givenRUMEnabled(launchType: backgroundLaunch, configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenRUMEnabled(launchType: backgroundLaunch, configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
-        // Given
         for given in [given1, given2] {
             // When / Then
             let sessions = try given.when(longTasksAreTracked).then()

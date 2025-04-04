@@ -117,23 +117,19 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
 
         for given in [given1, given2] {
             // When
-            let when1 = given.when(sesssionIsStopped)
-            let when2 = given.when(sesssionIsStopped)
-            let when3 = given.when(sesssionIsStopped)
+            let when = given.when(sesssionIsStopped)
 
-            for when in [when1, when2, when3] {
-                // Then
-                // - It tracks stopped session:
-                let session = try when.then().takeSingle()
-                XCTAssertNotNil(session.applicationStartAction)
-                XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2 + dt3, accuracy: accuracy)
-                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-                XCTAssertEqual(session.views.count, 1)
-                XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2 + dt3, accuracy: accuracy)
-            }
+            // Then
+            // - It tracks stopped session:
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 1)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2 + dt3, accuracy: accuracy)
         }
     }
 

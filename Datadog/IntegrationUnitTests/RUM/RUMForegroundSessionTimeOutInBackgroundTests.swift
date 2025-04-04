@@ -308,41 +308,37 @@ class RUMForegroundSessionTimeOutInBackgroundTests: XCTestCase {
         for given in [given1, given2] {
             // When
             // - time out → BG
-            let when = given.when(sesssionTimesOut).and(appEntersBackground)
+            let when1 = given.when(sesssionTimesOut).and(appEntersBackground)
 
             // Then
-            let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-            XCTAssertEqual(session.views.count, 2)
-            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.views[1].name, customViewName)
-            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
-        }
+            let session1 = try when1.then().takeSingle()
+            XCTAssertNotNil(session1.applicationStartAction)
+            XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session1.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 2)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.views[1].name, customViewName)
+            XCTAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
 
-        // Given
-        // - Session with Manual view
-        for given in [given1, given2] {
             // When
             // - BG → time out
-            let when = given.when(appEntersBackground).and(sesssionTimesOut)
+            let when2 = given.when(appEntersBackground).and(sesssionTimesOut)
 
             // Then
-            let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-            XCTAssertEqual(session.views.count, 2)
-            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.views[1].name, customViewName)
-            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+            let session2 = try when2.then().takeSingle()
+            XCTAssertNotNil(session2.applicationStartAction)
+            XCTAssertEqual(session2.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session2.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session2.views.count, 2)
+            XCTAssertEqual(session2.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session2.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session2.views[1].name, customViewName)
+            XCTAssertEqual(session2.views[1].duration, 0, accuracy: accuracy)
         }
     }
 
@@ -529,39 +525,37 @@ class RUMForegroundSessionTimeOutInBackgroundTests: XCTestCase {
         for given in [given1, given2] {
             // When
             // - time out → BG
-            let when = given.when(sesssionTimesOut).and(appEntersBackground)
+            let when1 = given.when(sesssionTimesOut).and(appEntersBackground)
 
             // Then
-            let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-            XCTAssertEqual(session.views.count, 2)
-            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.views[1].name, customViewName)
-            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
-        }
+            let session1 = try when1.then().takeSingle()
+            XCTAssertNotNil(session1.applicationStartAction)
+            XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session1.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 2)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.views[1].name, customViewName)
+            XCTAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
 
-        for given in [given1, given2] {
             // When
             // - BG → time out
-            let when = given.when(appEntersBackground).and(sesssionTimesOut)
+            let when2 = given.when(appEntersBackground).and(sesssionTimesOut)
 
             // Then
-            let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1 + dt2 + dt3, accuracy: accuracy)
-            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-            XCTAssertEqual(session.views.count, 2)
-            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.views[1].name, customViewName)
-            XCTAssertEqual(session.views[1].duration, dt3, accuracy: accuracy)
+            let session2 = try when2.then().takeSingle()
+            XCTAssertNotNil(session2.applicationStartAction)
+            XCTAssertEqual(session2.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session2.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session2.views.count, 2)
+            XCTAssertEqual(session2.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session2.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session2.views[1].name, customViewName)
+            XCTAssertEqual(session2.views[1].duration, dt3, accuracy: accuracy)
         }
     }
 

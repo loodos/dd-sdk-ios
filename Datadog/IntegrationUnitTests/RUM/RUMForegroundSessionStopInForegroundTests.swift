@@ -108,7 +108,7 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
 
     // MARK: - Session Stop on Application Launch View
 
-    func testGivenStoppedSessionWithApplicationLaunchView_whenEventsAreTracked() throws {
+    func testGivenSessionWithApplicationLaunchView_whenStopped() throws {
         // Given
         let given1 = givenForegroundSessionWithAppLaunchView()
         let given2 = givenForegroundSessionWithAppLaunchView(configureRUM: {
@@ -116,13 +116,39 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionIsStopped)
-
             // When
-            let when1 = given.when(actionsAreTracked)
-            let when2 = given.when(resourceIsTracked)
-            let when3 = given.when(longTasksAreTracked)
+            let when1 = given.when(sesssionIsStopped)
+            let when2 = given.when(sesssionIsStopped)
+            let when3 = given.when(sesssionIsStopped)
+
+            for when in [when1, when2, when3] {
+                // Then
+                // - It tracks stopped session:
+                let session = try when.then().takeSingle()
+                XCTAssertNotNil(session.applicationStartAction)
+                XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                XCTAssertEqual(session.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+                XCTAssertEqual(session.views.count, 1)
+                XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                XCTAssertEqual(session.views[0].duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            }
+        }
+    }
+
+    func testGivenSessionWithApplicationLaunchView_whenStopped_andEventsAreTracked() throws {
+        // Given
+        let given1 = givenForegroundSessionWithAppLaunchView()
+        let given2 = givenForegroundSessionWithAppLaunchView(configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given1, given2] {
+            // When
+            let when1 = given.when(sesssionIsStopped).and(actionsAreTracked)
+            let when2 = given.when(sesssionIsStopped).and(resourceIsTracked)
+            let when3 = given.when(sesssionIsStopped).and(longTasksAreTracked)
 
             for when in [when1, when2, when3] {
                 // Then
@@ -153,7 +179,7 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         }
     }
 
-    func testGivenStoppedSessionWithApplicationLaunchView_whenManualViewIsTracked() throws {
+    func testGivenSessionWithApplicationLaunchView_whenStopped_andManualViewIsTracked() throws {
         // Given
         let given1 = givenForegroundSessionWithAppLaunchView()
         let given2 = givenForegroundSessionWithAppLaunchView(configureRUM: {
@@ -161,11 +187,8 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionIsStopped)
-
             // When
-            let when = given.when(manualViewIsTracked)
+            let when = given.when(sesssionIsStopped).and(manualViewIsTracked)
 
             // Then
             // - It tracks stopped session:
@@ -191,7 +214,7 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         }
     }
 
-    func testGivenStoppedSessionWithApplicationLaunchView_whenAutomaticViewIsTracked() throws {
+    func testGivenSessionWithApplicationLaunchView_whenStopped_andAutomaticViewIsTracked() throws {
         // Given
         let given1 = givenForegroundSessionWithAppLaunchView(configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
@@ -202,11 +225,8 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionIsStopped)
-
             // When
-            let when = given.when(automaticViewIsTracked)
+            let when = given.when(sesssionIsStopped).and(automaticViewIsTracked)
 
             // Then
             // - It tracks stopped session:
@@ -234,7 +254,7 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
 
     // MARK: - Session Stop on Custom View
 
-    func testGivenStoppedSessionWithCustomView_whenEventsAreTracked() throws {
+    func testGivenSessionWithCustomView_whenStopped() throws {
         // Given
         let given1 = givenForegroundSessionWithManualView()
         let given2 = givenForegroundSessionWithManualView(configureRUM: {
@@ -249,13 +269,48 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2, given3, given4] {
-            // Given
-            let given = given.and(sesssionIsStopped)
-
             // When
-            let when1 = given.when(actionsAreTracked)
-            let when2 = given.when(resourceIsTracked)
-            let when3 = given.when(longTasksAreTracked)
+            let when1 = given.when(sesssionIsStopped)
+            let when2 = given.when(sesssionIsStopped)
+            let when3 = given.when(sesssionIsStopped)
+
+            for when in [when1, when2, when3] {
+                // Then
+                // - It tracks stopped session:
+                let session = try when.then().takeSingle()
+                XCTAssertNotNil(session.applicationStartAction)
+                XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                XCTAssertEqual(session.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+                XCTAssertEqual(session.views.count, 2)
+                XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+                XCTAssertEqual(session.views[1].name, customViewName)
+                XCTAssertEqual(session.views[1].duration, dt3, accuracy: accuracy)
+            }
+        }
+    }
+
+    func testGivenSessionWithCustomView_whenStopped_andEventsAreTracked() throws {
+        // Given
+        let given1 = givenForegroundSessionWithManualView()
+        let given2 = givenForegroundSessionWithManualView(configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+        let given3 = givenForegroundSessionWithAutomaticView(configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        })
+        let given4 = givenForegroundSessionWithAutomaticView(configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given1, given2, given3, given4] {
+            // When
+            let when1 = given.when(sesssionIsStopped).and(actionsAreTracked)
+            let when2 = given.when(sesssionIsStopped).and(resourceIsTracked)
+            let when3 = given.when(sesssionIsStopped).and(longTasksAreTracked)
 
             for when in [when1, when2, when3] {
                 // Then
@@ -288,7 +343,7 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         }
     }
 
-    func testGivenStoppedSessionWithCustomView_whenManualViewIsTracked() throws {
+    func testGivenSessionWithManualView_whenStopped_andManualViewIsTracked() throws {
         // Given
         let given1 = givenForegroundSessionWithManualView()
         let given2 = givenForegroundSessionWithManualView(configureRUM: {
@@ -296,11 +351,8 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionIsStopped)
-
             // When
-            let when = given.when(manualViewIsTracked)
+            let when = given.when(sesssionIsStopped).and(manualViewIsTracked)
 
             // Then
             // - It tracks stopped session:
@@ -328,7 +380,7 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         }
     }
 
-    func testGivenStoppedSessionWithCustomView_whenAutomaticViewIsTracked() throws {
+    func testGivenSessionWithAutomaticView_whenStopped_andAutomaticViewIsTracked() throws {
         // Given
         let given1 = givenForegroundSessionWithAutomaticView(configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
@@ -339,11 +391,8 @@ class RUMForegroundSessionStopInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionIsStopped)
-
             // When
-            let when = given.when(automaticViewIsTracked)
+            let when = given.when(sesssionIsStopped).and(automaticViewIsTracked)
 
             // Then
             // - It tracks stopped session:

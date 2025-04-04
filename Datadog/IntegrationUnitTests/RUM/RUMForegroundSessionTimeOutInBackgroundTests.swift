@@ -100,38 +100,56 @@ class RUMForegroundSessionTimeOutInBackgroundTests: XCTestCase {
 
     // MARK: - Session Time Out on Application Launch View
 
-    func testGivenTimedOutSessionWithApplicationLaunchView_whenAppEntersBackground() throws {
+    func testGivenSessionWithApplicationLaunchView_whenItTimesOut() throws {
         // Given
         let given1 = givenForegroundSessionWithAppLaunchView()
-        let given2 = givenForegroundSessionWithAppLaunchView(configureRUM: { $0.trackBackgroundEvents = true })
+        let given2 = givenForegroundSessionWithAppLaunchView(configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
+            // When
+            // - time out → BG
+            let when1 = given.when(sesssionTimesOut).and(appEntersBackground)
 
-            // When / Then
-            let session = try given.when(appEntersBackground).then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1, accuracy: accuracy)
-            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-            XCTAssertEqual(session.views.count, 1)
-            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+            // Then
+            let session1 = try when1.then().takeSingle()
+            XCTAssertNotNil(session1.applicationStartAction)
+            XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session1.duration, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 1)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session1.views[0].duration, dt1, accuracy: accuracy)
+
+            // When
+            // - BG → time out
+            let when2 = given.when(appEntersBackground).and(sesssionTimesOut)
+
+            // Then
+            let session2 = try when2.then().takeSingle()
+            XCTAssertNotNil(session2.applicationStartAction)
+            XCTAssertEqual(session2.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session2.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session2.views.count, 1)
+            XCTAssertEqual(session2.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session2.views[0].duration, dt1 + dt2 + dt3, accuracy: accuracy)
         }
     }
 
-    func testGivenTimedOutSessionWithApplicationLaunchView_whenEventsAreTrackedAfterAppEntersBackground() throws {
+    func testGivenSessionWithApplicationLaunchView_whenItTimesOut_andEventsAreTrackedInBackground() throws {
         // Given
         // - BET disabled
         let given = givenForegroundSessionWithAppLaunchView()
-            .and(sesssionTimesOut)
 
         // When
-        let when1 = given.when(appEntersBackground).and(actionsAreTracked)
-        let when2 = given.when(appEntersBackground).and(resourceIsTracked)
-        let when3 = given.when(appEntersBackground).and(longTasksAreTracked)
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(actionsAreTracked)
+        let when2 = given.when(sesssionTimesOut).and(appEntersBackground).and(resourceIsTracked)
+        let when3 = given.when(sesssionTimesOut).and(appEntersBackground).and(longTasksAreTracked)
 
         for when in [when1, when2, when3] {
             // Then
@@ -146,17 +164,39 @@ class RUMForegroundSessionTimeOutInBackgroundTests: XCTestCase {
             XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
             XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
         }
-    }
-
-    func testGivenTimedOutSessionWithApplicationLaunchView_andBETEnabled_whenEventsAreTrackedAfterAppEntersBackground() throws {
-        // Given
-        // - BET enabled
-        let given = givenForegroundSessionWithAppLaunchView(configureRUM: { $0.trackBackgroundEvents = true })
-            .and(sesssionTimesOut)
 
         // When
-        let when1 = given.when(appEntersBackground).and(actionsAreTracked)
-        let when2 = given.when(appEntersBackground).and(resourceIsTracked)
+        // - BG → time out
+        let when4 = given.when(appEntersBackground).and(sesssionTimesOut).and(actionsAreTracked)
+        let when5 = given.when(appEntersBackground).and(sesssionTimesOut).and(resourceIsTracked)
+        let when6 = given.when(appEntersBackground).and(sesssionTimesOut).and(longTasksAreTracked)
+
+        for when in [when4, when5, when6] {
+            // Then
+            // - Only timed-out session is tracked
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 1)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2 + dt3, accuracy: accuracy)
+        }
+    }
+
+    func testGivenSessionWithApplicationLaunchView_andBETEnabled_whenItTimesOut_andEventsAreTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given = givenForegroundSessionWithAppLaunchView(configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        // When
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(actionsAreTracked)
+        let when2 = given.when(sesssionTimesOut).and(appEntersBackground).and(resourceIsTracked)
 
         for when in [when1, when2] {
             // Then
@@ -183,163 +223,94 @@ class RUMForegroundSessionTimeOutInBackgroundTests: XCTestCase {
             XCTAssertEqual(session2.views[0].actionEvents.count, when == when1 ? 2 : 0)
             XCTAssertEqual(session2.views[0].resourceEvents.count, when == when2 ? 1 : 0)
         }
-    }
-
-    func testGivenTimedOutSessionWithApplicationLaunchView_andBETEnabled_whenLongTasksAreTrackedAfterAppEntersBackground() throws {
-        // Given
-        // - BET enabled
-        let given = givenForegroundSessionWithAppLaunchView(configureRUM: { $0.trackBackgroundEvents = true })
-            .and(sesssionTimesOut)
 
         // When
-        let when = given.when(appEntersBackground).and(longTasksAreTracked)
+        // - BG → time out
+        let when3 = given.when(appEntersBackground).and(sesssionTimesOut).and(actionsAreTracked)
+        let when4 = given.when(appEntersBackground).and(sesssionTimesOut).and(resourceIsTracked)
+
+        for when in [when3, when4] {
+            // Then
+            // - It tracks timed-out session:
+            let (session1, session2) = try when.then().takeTwo()
+            XCTAssertNotNil(session1.applicationStartAction)
+            XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session1.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 1)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session1.views[0].duration, dt1 + dt2 + dt3, accuracy: accuracy)
+
+            // - It creates new session for tracking background events:
+            XCTAssertNil(session2.applicationStartAction)
+            XCTAssertNil(session2.applicationStartupTime)
+            XCTAssertEqual(session2.sessionStartDate, processLaunchDate + dt1 + dt2 + dt3 + sessionTimeoutDuration + dt4, accuracy: accuracy)
+            XCTAssertEqual(session2.duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+            XCTAssertEqual(session2.views.count, 1)
+            XCTAssertEqual(session2.views[0].name, backgroundViewName)
+            XCTAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.views[0].actionEvents.count, when == when3 ? 2 : 0)
+            XCTAssertEqual(session2.views[0].resourceEvents.count, when == when4 ? 1 : 0)
+        }
+    }
+
+    func testGivenSessionWithApplicationLaunchView_andBETEnabled_whenItTimesOut_andLongTasksAreTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given = givenForegroundSessionWithAppLaunchView(configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        // When
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(longTasksAreTracked)
 
         // Then
         // - It only tracks timed-out session:
-        let session = try when.then().takeSingle()
-        XCTAssertNotNil(session.applicationStartAction)
-        XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-        XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-        XCTAssertEqual(session.duration, dt1, accuracy: accuracy)
-        XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-        XCTAssertEqual(session.views.count, 1)
-        XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-        XCTAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
+        let session1 = try when1.then().takeSingle()
+        XCTAssertNotNil(session1.applicationStartAction)
+        XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+        XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        XCTAssertEqual(session1.duration, dt1, accuracy: accuracy)
+        XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1.views.count, 1)
+        XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+        XCTAssertEqual(session1.views[0].duration, dt1, accuracy: accuracy)
+
+        // When
+        // - BG → time out
+        let when2 = given.when(appEntersBackground).and(sesssionTimesOut).and(longTasksAreTracked)
+
+        // Then
+        // - It only tracks timed-out session:
+        let session2 = try when2.then().takeSingle()
+        XCTAssertNotNil(session2.applicationStartAction)
+        XCTAssertEqual(session2.applicationStartupTime, dt1, accuracy: accuracy)
+        XCTAssertEqual(session2.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        XCTAssertEqual(session2.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+        XCTAssertEqual(session2.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session2.views.count, 1)
+        XCTAssertEqual(session2.views[0].name, applicationLaunchViewName)
+        XCTAssertEqual(session2.views[0].duration, dt1 + dt2 + dt3, accuracy: accuracy)
     }
 
-    // MARK: - Session Time Out on Custom View
+    // MARK: - Session Time Out on Manual View
 
-    func testGivenTimedOutSessionWithCustomView_whenAppEntersBackground() throws {
+    func testGivenSessionWithManualView_whenItTimesOut() throws {
         // Given
         let given1 = givenForegroundSessionWithManualView()
-        let given2 = givenForegroundSessionWithManualView(configureRUM: { $0.trackBackgroundEvents = true })
-        let given3 = givenForegroundSessionWithAutomaticView(configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        })
-        let given4 = givenForegroundSessionWithAutomaticView(configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-            $0.trackBackgroundEvents = true
-        })
-
-        for given in [given1, given2, given3, given4] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
-            // When / Then
-            let session = try given.when(appEntersBackground).then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-            XCTAssertEqual(session.views.count, 2)
-            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
-            XCTAssertEqual(session.views[1].name, customViewName)
-            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
-        }
-    }
-
-    func testGivenTimedOutSessionWithCustomView_whenEventsAreTrackedAfterAppEntersBackground() throws {
-        // Given
-        // - BET disabled
-        let given1 = givenForegroundSessionWithManualView()
-        let given2 = givenForegroundSessionWithAutomaticView(configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        })
-
-        for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
-            // When
-            let when1 = given.when(appEntersBackground).and(actionsAreTracked)
-            let when2 = given.when(appEntersBackground).and(resourceIsTracked)
-            let when3 = given.when(appEntersBackground).and(longTasksAreTracked)
-
-            for when in [when1, when2, when3] {
-                // Then
-                // - Only timed-out session is tracked
-                let session = try when.then().takeSingle()
-                XCTAssertNotNil(session.applicationStartAction)
-                XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
-                XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-                XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
-                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-                XCTAssertEqual(session.views.count, 2)
-                XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
-                XCTAssertEqual(session.views[1].name, customViewName)
-                XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
-            }
-        }
-    }
-
-    func testGivenTimedOutSessionCustomView_andBETEnabled_whenEventsAreTrackedAfterAppEntersBackground() throws {
-        // Given
-        // - BET enabled
-        let given1 = givenForegroundSessionWithManualView(configureRUM: { $0.trackBackgroundEvents = true })
-        let given2 = givenForegroundSessionWithAutomaticView(configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        let given2 = givenForegroundSessionWithManualView(configureRUM: {
             $0.trackBackgroundEvents = true
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
             // When
-            let when1 = given.when(appEntersBackground).and(actionsAreTracked)
-            let when2 = given.when(appEntersBackground).and(resourceIsTracked)
-
-            for when in [when1, when2] {
-                // Then
-                // - It tracks timed-out session:
-                let (session1, session2) = try when.then().takeTwo()
-                XCTAssertNotNil(session1.applicationStartAction)
-                XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
-                XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
-                XCTAssertEqual(session1.duration, dt1 + dt2, accuracy: accuracy)
-                XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
-                XCTAssertEqual(session1.views.count, 2)
-                XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
-                XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
-                XCTAssertEqual(session1.views[1].name, customViewName)
-                XCTAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
-
-                // - It creates new session for tracking background events:
-                XCTAssertNil(session2.applicationStartAction)
-                XCTAssertNil(session2.applicationStartupTime)
-                XCTAssertEqual(session2.sessionStartDate, processLaunchDate + dt1 + dt2 + sessionTimeoutDuration + dt3 + dt4, accuracy: accuracy)
-                XCTAssertEqual(session2.duration, dt5, accuracy: accuracy)
-                XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
-                XCTAssertEqual(session2.views.count, 1)
-                XCTAssertEqual(session2.views[0].name, backgroundViewName)
-                XCTAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)
-                XCTAssertEqual(session2.views[0].actionEvents.count, when == when1 ? 2 : 0)
-                XCTAssertEqual(session2.views[0].resourceEvents.count, when == when2 ? 1 : 0)
-            }
-        }
-    }
-
-    func testGivenTimedOutSessionWithCustomView_andBETEnabled_whenLongTasksAreTrackedAfterAppEntersBackground() throws {
-        // Given
-        // - BET enabled
-        let given1 = givenForegroundSessionWithManualView(configureRUM: { $0.trackBackgroundEvents = true })
-        let given2 = givenForegroundSessionWithAutomaticView(configureRUM: {
-            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-            $0.trackBackgroundEvents = true
-        })
-
-        for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
-            // When
-            let when = given.when(appEntersBackground).and(longTasksAreTracked)
+            // - time out → BG
+            let when = given.when(sesssionTimesOut).and(appEntersBackground)
 
             // Then
-            // - It only tracks timed-out session:
             let session = try when.then().takeSingle()
             XCTAssertNotNil(session.applicationStartAction)
             XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
@@ -352,5 +323,417 @@ class RUMForegroundSessionTimeOutInBackgroundTests: XCTestCase {
             XCTAssertEqual(session.views[1].name, customViewName)
             XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
         }
+
+        // Given
+        // - Session with Manual view
+        for given in [given1, given2] {
+            // When
+            // - BG → time out
+            let when = given.when(appEntersBackground).and(sesssionTimesOut)
+
+            // Then
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 2)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.views[1].name, customViewName)
+            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+        }
+    }
+
+    func testGivenSessionWithManualView_whenItTimesOut_andEventsAreTrackedInBackground() throws {
+        // Given
+        // - BET disabled
+        let given = givenForegroundSessionWithManualView()
+
+        // When
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(actionsAreTracked)
+        let when2 = given.when(sesssionTimesOut).and(appEntersBackground).and(resourceIsTracked)
+        let when3 = given.when(sesssionTimesOut).and(appEntersBackground).and(longTasksAreTracked)
+
+        for when in [when1, when2, when3] {
+            // Then
+            // - Only timed-out session is tracked
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 2)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.views[1].name, customViewName)
+            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+        }
+
+        // When
+        // - BG → time out
+        let when4 = given.when(appEntersBackground).and(sesssionTimesOut).and(actionsAreTracked)
+        let when5 = given.when(appEntersBackground).and(sesssionTimesOut).and(resourceIsTracked)
+        let when6 = given.when(appEntersBackground).and(sesssionTimesOut).and(longTasksAreTracked)
+
+        for when in [when4, when5, when6] {
+            // Then
+            // - Only timed-out session is tracked
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 2)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.views[1].name, customViewName)
+            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+        }
+    }
+
+    func testGivenSessionWithManualView_andBETEnabled_whenItTimesOut_andEventsAreTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given = givenForegroundSessionWithManualView(configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        // When
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(actionsAreTracked)
+        let when2 = given.when(sesssionTimesOut).and(appEntersBackground).and(resourceIsTracked)
+
+        for when in [when1, when2] {
+            // Then
+            // - It tracks timed-out session:
+            let (session1, session2) = try when.then().takeTwo()
+            XCTAssertNotNil(session1.applicationStartAction)
+            XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session1.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 2)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.views[1].name, customViewName)
+            XCTAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
+
+            // - It creates new session for tracking background events:
+            XCTAssertNil(session2.applicationStartAction)
+            XCTAssertNil(session2.applicationStartupTime)
+            XCTAssertEqual(session2.sessionStartDate, processLaunchDate + dt1 + dt2 + sessionTimeoutDuration + dt3 + dt4, accuracy: accuracy)
+            XCTAssertEqual(session2.duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+            XCTAssertEqual(session2.views.count, 1)
+            XCTAssertEqual(session2.views[0].name, backgroundViewName)
+            XCTAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.views[0].actionEvents.count, when == when1 ? 2 : 0)
+            XCTAssertEqual(session2.views[0].resourceEvents.count, when == when2 ? 1 : 0)
+        }
+
+        // When
+        // - BG → time out
+        let when3 = given.when(appEntersBackground).and(sesssionTimesOut).and(actionsAreTracked)
+        let when4 = given.when(appEntersBackground).and(sesssionTimesOut).and(resourceIsTracked)
+
+        for when in [when3, when4] {
+            // Then
+            // - It tracks timed-out session:
+            let (session1, session2) = try when.then().takeTwo()
+            XCTAssertNotNil(session1.applicationStartAction)
+            XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session1.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 2)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.views[1].name, customViewName)
+            XCTAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
+
+            // - It creates new session for tracking background events:
+            XCTAssertNil(session2.applicationStartAction)
+            XCTAssertNil(session2.applicationStartupTime)
+            XCTAssertEqual(session2.sessionStartDate, processLaunchDate + dt1 + dt2 + sessionTimeoutDuration + dt3 + dt4, accuracy: accuracy)
+            XCTAssertEqual(session2.duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+            XCTAssertEqual(session2.views.count, 1)
+            XCTAssertEqual(session2.views[0].name, backgroundViewName)
+            XCTAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.views[0].actionEvents.count, when == when3 ? 2 : 0)
+            XCTAssertEqual(session2.views[0].resourceEvents.count, when == when4 ? 1 : 0)
+        }
+    }
+
+    func testGivenSessionWithManualView_andBETEnabled_whenItTimesOut_andLongTasksAreTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given = givenForegroundSessionWithManualView(configureRUM: {
+            $0.trackBackgroundEvents = true
+        })
+
+        // When
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(longTasksAreTracked)
+
+        // Then
+        // - It only tracks timed-out session:
+        let session1 = try when1.then().takeSingle()
+        XCTAssertNotNil(session1.applicationStartAction)
+        XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+        XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        XCTAssertEqual(session1.duration, dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1.views.count, 2)
+        XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+        XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1.views[1].name, customViewName)
+        XCTAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
+
+        // When
+        // - BG → time out
+        let when2 = given.when(appEntersBackground).and(sesssionTimesOut).and(longTasksAreTracked)
+
+        // Then
+        // - It only tracks timed-out session:
+        let session2 = try when2.then().takeSingle()
+        XCTAssertNotNil(session2.applicationStartAction)
+        XCTAssertEqual(session2.applicationStartupTime, dt1, accuracy: accuracy)
+        XCTAssertEqual(session2.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        XCTAssertEqual(session2.duration, dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session2.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session2.views.count, 2)
+        XCTAssertEqual(session2.views[0].name, applicationLaunchViewName)
+        XCTAssertEqual(session2.views[0].duration, dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session2.views[1].name, customViewName)
+        XCTAssertEqual(session2.views[1].duration, 0, accuracy: accuracy)
+    }
+
+    // MARK: - Session Time Out on Automatic View
+
+    func testGivenSessionWithAutomaticView_whenItTimesOut() throws {
+        // Given
+        let given1 = givenForegroundSessionWithAutomaticView(configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        })
+        let given2 = givenForegroundSessionWithAutomaticView(configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            $0.trackBackgroundEvents = true
+        })
+
+        for given in [given1, given2] {
+            // When
+            // - time out → BG
+            let when = given.when(sesssionTimesOut).and(appEntersBackground)
+
+            // Then
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 2)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.views[1].name, customViewName)
+            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+        }
+
+        for given in [given1, given2] {
+            // When
+            // - BG → time out
+            let when = given.when(appEntersBackground).and(sesssionTimesOut)
+
+            // Then
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 2)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.views[1].name, customViewName)
+            XCTAssertEqual(session.views[1].duration, dt3, accuracy: accuracy)
+        }
+    }
+
+    func testGivenSessionWithAutomaticView_whenItTimesOut_andEventsAreTrackedInBackground() throws {
+        // Given
+        // - BET disabled
+        let given = givenForegroundSessionWithAutomaticView(configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        })
+
+        // When
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(actionsAreTracked)
+        let when2 = given.when(sesssionTimesOut).and(appEntersBackground).and(resourceIsTracked)
+        let when3 = given.when(sesssionTimesOut).and(appEntersBackground).and(longTasksAreTracked)
+
+        for when in [when1, when2, when3] {
+            // Then
+            // - Only timed-out session is tracked
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 2)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.views[1].name, customViewName)
+            XCTAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+        }
+
+        // When
+        // - BG → time out
+        let when4 = given.when(appEntersBackground).and(sesssionTimesOut).and(actionsAreTracked)
+        let when5 = given.when(appEntersBackground).and(sesssionTimesOut).and(resourceIsTracked)
+        let when6 = given.when(appEntersBackground).and(sesssionTimesOut).and(longTasksAreTracked)
+
+        for when in [when4, when5, when6] {
+            // Then
+            // - Only timed-out session is tracked
+            let session = try when.then().takeSingle()
+            XCTAssertNotNil(session.applicationStartAction)
+            XCTAssertEqual(session.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session.views.count, 2)
+            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session.views[1].name, customViewName)
+            XCTAssertEqual(session.views[1].duration, dt3, accuracy: accuracy)
+        }
+    }
+
+    func testGivenSessionWithAutomaticView_andBETEnabled_whenItTimesOut_andEventsAreTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given = givenForegroundSessionWithAutomaticView(configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            $0.trackBackgroundEvents = true
+        })
+
+        // When
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(actionsAreTracked)
+        let when2 = given.when(sesssionTimesOut).and(appEntersBackground).and(resourceIsTracked)
+
+        for when in [when1, when2] {
+            // Then
+            // - It tracks timed-out session:
+            let (session1, session2) = try when.then().takeTwo()
+            XCTAssertNotNil(session1.applicationStartAction)
+            XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session1.duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 2)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.views[1].name, customViewName)
+            XCTAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
+
+            // - It creates new session for tracking background events:
+            XCTAssertNil(session2.applicationStartAction)
+            XCTAssertNil(session2.applicationStartupTime)
+            XCTAssertEqual(session2.sessionStartDate, processLaunchDate + dt1 + dt2 + sessionTimeoutDuration + dt3 + dt4, accuracy: accuracy)
+            XCTAssertEqual(session2.duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+            XCTAssertEqual(session2.views.count, 1)
+            XCTAssertEqual(session2.views[0].name, backgroundViewName)
+            XCTAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.views[0].actionEvents.count, when == when1 ? 2 : 0)
+            XCTAssertEqual(session2.views[0].resourceEvents.count, when == when2 ? 1 : 0)
+        }
+
+        // When
+        // - BG → time out
+        let when3 = given.when(appEntersBackground).and(sesssionTimesOut).and(actionsAreTracked)
+        let when4 = given.when(appEntersBackground).and(sesssionTimesOut).and(resourceIsTracked)
+
+        for when in [when3, when4] {
+            // Then
+            // - It tracks timed-out session:
+            let (session1, session2) = try when.then().takeTwo()
+            XCTAssertNotNil(session1.applicationStartAction)
+            XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            XCTAssertEqual(session1.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 2)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.views[1].name, customViewName)
+            XCTAssertEqual(session1.views[1].duration, dt3, accuracy: accuracy)
+
+            // - It creates new session for tracking background events:
+            XCTAssertNil(session2.applicationStartAction)
+            XCTAssertNil(session2.applicationStartupTime)
+            XCTAssertEqual(session2.sessionStartDate, processLaunchDate + dt1 + dt2 + sessionTimeoutDuration + dt3 + dt4, accuracy: accuracy)
+            XCTAssertEqual(session2.duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+            XCTAssertEqual(session2.views.count, 1)
+            XCTAssertEqual(session2.views[0].name, backgroundViewName)
+            XCTAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.views[0].actionEvents.count, when == when3 ? 2 : 0)
+            XCTAssertEqual(session2.views[0].resourceEvents.count, when == when4 ? 1 : 0)
+        }
+    }
+
+    func testGivenSessionWithAutomaticView_andBETEnabled_whenItTimesOut_andLongTasksAreTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given = givenForegroundSessionWithAutomaticView(configureRUM: {
+            $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+            $0.trackBackgroundEvents = true
+        })
+
+        // When
+        // - time out → BG
+        let when1 = given.when(sesssionTimesOut).and(appEntersBackground).and(longTasksAreTracked)
+
+        // Then
+        // - It only tracks timed-out session:
+        let session1 = try when1.then().takeSingle()
+        XCTAssertNotNil(session1.applicationStartAction)
+        XCTAssertEqual(session1.applicationStartupTime, dt1, accuracy: accuracy)
+        XCTAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        XCTAssertEqual(session1.duration, dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1.views.count, 2)
+        XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+        XCTAssertEqual(session1.views[0].duration, dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1.views[1].name, customViewName)
+        XCTAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
+
+        // When
+        // - BG → time out
+        let when2 = given.when(appEntersBackground).and(sesssionTimesOut).and(longTasksAreTracked)
+
+        // Then
+        // - It only tracks timed-out session:
+        let session2 = try when2.then().takeSingle()
+        XCTAssertNotNil(session2.applicationStartAction)
+        XCTAssertEqual(session2.applicationStartupTime, dt1, accuracy: accuracy)
+        XCTAssertEqual(session2.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        XCTAssertEqual(session2.duration, dt1 + dt2 + dt3, accuracy: accuracy)
+        XCTAssertEqual(session2.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session2.views.count, 2)
+        XCTAssertEqual(session2.views[0].name, applicationLaunchViewName)
+        XCTAssertEqual(session2.views[0].duration, dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session2.views[1].name, customViewName)
+        XCTAssertEqual(session2.views[1].duration, dt3, accuracy: accuracy)
     }
 }

@@ -129,12 +129,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
             switch endReason {
             case .timeOut, .maxDuration:
-                // RUM-RUM-8372 Do not refresh session if event arrives in background. If `trackBackgroundEvents` is enabled
-                // the session will be started lazily with Background view.
-                guard context.applicationStateHistory.currentState == .active else {
-                    return nil
-                }
-
                 // Replace this session scope with the scope for refreshed session:
                 return refresh(expiredSession: scope, on: command, context: context, writer: writer)
             case .stopAPI:
@@ -199,12 +193,21 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
 
         let isViewRelatedCommand = (command is RUMStartViewCommand) || (command is RUMStopViewCommand)
+        let refreshingInForeground = context.applicationStateHistory.currentState == .active
+        // RUM-8372 Restart the last active view from expired session only when both conditions are met:
+        // - The command is not view-related. In this case, the first view in session will be managed by
+        // propagating that command to refreshed session in next lines.
+        // - The app is in foreground. In case it is in background, we don't want the session to restart with
+        // foreground view. Instead, propagating the command to refreshed session in next lines may create
+        // distinct "Background" view if other conditions are met (like BET enabled).
+        let transferActiveView = !isViewRelatedCommand && refreshingInForeground
+
         let refreshedSession = RUMSessionScope(
             from: expiredSession,
             startTime: command.time,
             startPrecondition: startPrecondition,
             context: context,
-            transferActiveView: !isViewRelatedCommand
+            transferActiveView: transferActiveView
         )
         sessionScopeDidUpdate(refreshedSession)
         lastSessionEndReason = nil

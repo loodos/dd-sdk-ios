@@ -192,15 +192,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
 
-        let isViewRelatedCommand = (command is RUMStartViewCommand) || (command is RUMStopViewCommand)
         let refreshingInForeground = context.applicationStateHistory.currentState == .active
-        // RUM-8372 Restart the last active view from expired session only when both conditions are met:
-        // - The command is not view-related. In this case, the first view in session will be managed by
-        // propagating that command to refreshed session in next lines.
-        // - The app is in foreground. In case it is in background, we don't want the session to restart with
-        // foreground view. Instead, propagating the command to refreshed session in next lines may create
-        // distinct "Background" view if other conditions are met (like BET enabled).
-        let transferActiveView = !isViewRelatedCommand && refreshingInForeground
+        let transferActiveView = command.shouldRestartLastViewFromEndedSession && refreshingInForeground
 
         let refreshedSession = RUMSessionScope(
             from: expiredSession,
@@ -233,7 +226,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Starting NEW session on due to \(type(of: command)), but initial sesison never existed")
         }
 
-        let isViewRelatedCommand = (command is RUMStartViewCommand) || (command is RUMStopViewCommand)
+        let startingInForeground = context.applicationStateHistory.currentState == .active
+        let resumeViewScope = command.shouldRestartLastViewFromEndedSession && startingInForeground
+
         let newSession = RUMSessionScope(
             isInitialSession: false,
             parent: self,
@@ -241,7 +236,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startPrecondition: startPrecondition,
             context: context,
             dependencies: dependencies,
-            resumingViewScope: isViewRelatedCommand ? nil : lastActiveView
+            resumingViewScope: resumeViewScope ? lastActiveView : nil
         )
         lastActiveView = nil
         lastSessionEndReason = nil

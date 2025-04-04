@@ -107,7 +107,7 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
 
     // MARK: - Session Time Out on Application Launch View
 
-    func testGivenTimedOutSessionWithApplicationLaunchView_whenEventsAreTracked() throws {
+    func testGivenSessionWithApplicationLaunchView_whenItTimesOut_andEventsAreTrackedInForeground() throws {
         // Given
         let given1 = givenForegroundSessionWithAppLaunchView()
         let given2 = givenForegroundSessionWithAppLaunchView(configureRUM: {
@@ -115,13 +115,10 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
             // When
-            let when1 = given.when(actionsAreTracked)
-            let when2 = given.when(resourceIsTracked)
-            let when3 = given.when(longTasksAreTracked)
+            let when1 = given.when(sesssionTimesOut).and(actionsAreTracked)
+            let when2 = given.when(sesssionTimesOut).and(resourceIsTracked)
+            let when3 = given.when(sesssionTimesOut).and(longTasksAreTracked)
 
             for when in [when1, when2, when3] {
                 // Then
@@ -152,7 +149,7 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         }
     }
 
-    func testGivenTimedOutSessionWithApplicationLaunchView_whenManualViewIsTracked() throws {
+    func testGivenSessionWithApplicationLaunchView_whenItTimesOut_andManualViewIsTrackedInForeground() throws {
         // Given
         let given1 = givenForegroundSessionWithAppLaunchView()
         let given2 = givenForegroundSessionWithAppLaunchView(configureRUM: {
@@ -160,11 +157,8 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
             // When
-            let when = given.when(manualViewIsTracked)
+            let when = given.when(sesssionTimesOut).and(manualViewIsTracked)
 
             // Then
             // - It tracks timed-out session:
@@ -190,7 +184,7 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         }
     }
 
-    func testGivenTimedOutSessionWithApplicationLaunchView_whenAutomaticViewIsTracked() throws {
+    func testGivenSessionWithApplicationLaunchView_whenItTimesOut_andAutomaticViewIsTrackedInForeground() throws {
         // Given
         let given1 = givenForegroundSessionWithAppLaunchView(configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
@@ -201,11 +195,8 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
             // When
-            let when = given.when(automaticViewIsTracked)
+            let when = given.when(sesssionTimesOut).and(automaticViewIsTracked)
 
             // Then
             // - It tracks timed-out session:
@@ -233,7 +224,7 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
 
     // MARK: - Session Time Out on Custom View
 
-    func testGivenTimedOutSessionWithCustomView_whenEventsAreTracked() throws {
+    func testGivenSessionWithCustomView_whenItTimesOut_andEventsAreTrackedInForeground() throws {
         // Given
         let given1 = givenForegroundSessionWithManualView()
         let given2 = givenForegroundSessionWithManualView(configureRUM: {
@@ -248,13 +239,10 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2, given3, given4] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
             // When
-            let when1 = given.when(actionsAreTracked)
-            let when2 = given.when(resourceIsTracked)
-            let when3 = given.when(longTasksAreTracked)
+            let when1 = given.when(sesssionTimesOut).and(actionsAreTracked)
+            let when2 = given.when(sesssionTimesOut).and(resourceIsTracked)
+            let when3 = given.when(sesssionTimesOut).and(longTasksAreTracked)
 
             for when in [when1, when2, when3] {
                 // Then
@@ -287,7 +275,7 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         }
     }
 
-    func testGivenTimedOutSessionWithCustomView_whenManualViewIsTracked() throws {
+    func testGivenSessionWithManualView_whenItTimesOut_andManualViewIsTrackedInForeground() throws {
         // Given
         let given1 = givenForegroundSessionWithManualView()
         let given2 = givenForegroundSessionWithManualView(configureRUM: {
@@ -295,11 +283,8 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
             // When
-            let when = given.when(manualViewIsTracked)
+            let when = given.when(sesssionTimesOut).and(manualViewIsTracked)
 
             // Then
             // - It tracks timed-out session:
@@ -327,7 +312,7 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         }
     }
 
-    func testGivenTimedOutSessionWithCustomView_whenAutomaticViewIsTracked() throws {
+    func testGivenSessionWithAutomaticView_whenItTimesOut_andAutomaticViewIsTrackedInForeground() throws {
         // Given
         let given1 = givenForegroundSessionWithAutomaticView(configureRUM: {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
@@ -338,11 +323,8 @@ class RUMForegroundSessionTimeOutInForegroundTests: XCTestCase {
         })
 
         for given in [given1, given2] {
-            // Given
-            let given = given.and(sesssionTimesOut)
-
             // When
-            let when = given.when(automaticViewIsTracked)
+            let when = given.when(sesssionTimesOut).and(automaticViewIsTracked)
 
             // Then
             // - It tracks timed-out session:

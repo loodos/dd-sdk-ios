@@ -719,7 +719,7 @@ public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
 }
 
 extension RUMContext {
-    public static func mockAny() -> RUMContext {
+    public static func mockAny() -> Self {
         return mockWith()
     }
 
@@ -731,7 +731,7 @@ extension RUMContext {
         activeViewPath: String? = nil,
         activeViewName: String? = nil,
         activeUserActionID: RUMUUID? = nil
-    ) -> RUMContext {
+    ) -> Self {
         return RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: sessionID,

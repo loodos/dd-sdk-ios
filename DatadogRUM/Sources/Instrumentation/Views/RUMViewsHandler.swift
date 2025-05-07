@@ -188,7 +188,7 @@ internal final class RUMViewsHandler {
         subscriber?.process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,
-                attributes: [:],
+                attributes: view.attributes,
                 identity: view.identity
             )
         )
